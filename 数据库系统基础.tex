@@ -869,6 +869,138 @@ WHERE  <Condition>
 
 \chapter{关系模式规范化理论}
 
+\section{函数依赖}
+
+设 $R = \left\{ A_1, A_2, \cdots, A_n \right\}$ 是 $n$ 个属性组成的属性组,
+我们也将其称为单个\textbf{泛关系模式} (universal relational schema). 本章
+讨论的目的, 是建立一种符合 $R$ 的关系状态 $\mathcal{R}$.
+
+\begin{definition}
+    设 $X, Y$ 是 $R$ 的两个子集, 这就是说, $X$ 和 $Y$ 是 $R$ 中的两个子属性组,
+    如果对于关系 $\mathcal{R}$ 中任意的元组 $t_1$ 和 $t_2$, 都满足
+    从 $t_1[X] = t_2[X]$ 能够推出 $t_1[Y] = t_2[Y]$, 即
+    \[ \forall t_1, t_2 \in \mathcal{R} \left(
+        t_1[X] = t_2[X] \Longrightarrow t_1[Y] = t_2[Y]
+    \right), \]
+    则称属性组 $Y$ \textbf{函数依赖} (functional dependency) 于 $X$,
+    记作 $X \to Y$.
+\end{definition}
+
+换言之, 属性组 $X$ 中的一个值能够唯一确定属性组 $Y$ 中的一个值.
+这与我们在数学上接触过的函数的概念是一致的.
+
+\begin{example}
+    对于存储于学校教务系统的一个学生来说, $\left\{\mathrm{sNo}\right\} \to \left\{
+        \mathrm{sName}, \mathrm{sDepartment}, \mathrm{sMajor}
+    \right\}$, 这就是说, 只要确定一个同学的学号, 就能够\textbf{唯一地确定}
+    TA 的姓名、学院和专业, 例如, 如果一个学生 $s$ 满足
+    \[ s[\mathrm{sNo}] = 2021114514, \]
+    那么必然满足
+    \[ s[\mathrm{sName}] = \mathrm{Strik0r}, \]
+    \[ s[\mathrm{sDepartment}] = \mathrm{Software}, \] 
+    \[ s[\mathrm{sMajor}] = \mathrm{Software\_Engineering}. \]
+    你可以用图示的方法来明确的表达属性之间的函数依赖关系:
+    \begin{figure}[H]
+        \centering
+
+
+        \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+        \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+        %uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+        
+        
+        % Text Node
+        \draw (122,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {sNo};
+        % Text Node
+        \draw (239,78) node [anchor=north west][inner sep=0.75pt]   [align=left] {sName};
+        % Text Node
+        \draw (239,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {sDepartment};
+        % Text Node
+        \draw (239,174) node [anchor=north west][inner sep=0.75pt]   [align=left] {sMajor};
+        % Connection
+        \draw    (154,129.64) -- (233.21,98.58) ;
+        \draw [shift={(236,97.48)}, rotate = 158.59] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+        % Connection
+        \draw    (154,136.5) -- (233,136.5) ;
+        \draw [shift={(236,136.5)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+        % Connection
+        \draw    (154,142.89) -- (233.18,171.8) ;
+        \draw [shift={(236,172.83)}, rotate = 200.06] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+        
+        \end{tikzpicture}
+    \end{figure}
+\end{example}
+
+\begin{definition}
+    关系模式 $R = \left\{A_1, A_2, \cdots, A_n \right\}$ 的一个属性集合
+    $S \subset R$, 如果在任意的合法关系状态 $\mathcal{R}$ 中,
+    对于任意的两个元组 $t_1, t_2$ 必有 $t_1[S] \ne t_2[S]$,
+    则称 $S$ 是 $R$ 的一个\textbf{超键}.
+\end{definition}
+
+这就是说, 如果一个属性组是超键, 那么在合法的关系状态中, 元组的超键的值是唯一的,
+即通过超键能够唯一地确定一个元组.
+
+\begin{definition}
+    关系模式 $R = \left\{ A_1, A_2, \cdots, A_n \right\}$
+    的一个属性集合 $K \subset R$ 如果同时满足以下两个条件:
+    \begin{enumerate}[label={${\arabic*}^\circ$}, itemsep=0pt]
+        \item $\forall \mathcal{R}(R) \forall t_1 t_2 \left(
+            t_1[K] \ne t_2[K]
+        \right)$, 即 $K$ 是 $R$ 的一个超键.
+        \item 对于 $K$ 中任意的一个属性 $A_i$, 属性组
+        $K - \left\{ A_i \right\}$ 都不再是 $R$ 的超键.
+    \end{enumerate}
+    则称 $K$ 是 $R$ 的一个\textbf{键}.
+\end{definition}
+
+超键与键之间的关系, 就像上界与上确界之间的关系\footnote{
+    如果读者想要了解有关有界数集的界与确界的更多内容,
+    可以参考笔者编写的《数学分析》.
+}. 上确界是最小上界,
+同理, 键是不能再删除属性的超键.
+
+如果一个关系模式具有多个键, 则把这些键称为候选键, 可以从中任意地选定一个作为\textbf{主键},
+其他的候选键则称为辅键. 在关系型数据库中, 每个关系模式都必须有一个主键.
+
+\begin{definition}[主属性]
+    设 $R = \left\{A_1, A_2, \cdots, A_n\right\}$ 是一个关系模式,
+    $K$ 是 $R$ 的一个候选键. 如果属性 $A_i \in K$, 即属性 $A_i$ 是键属性组
+    $K$ 的成员, 那么称 $A_i$ 为 $R$ 的一个\textbf{主属性} (prime attribute).
+    如果一个属性不是任何候选键的成员, 则称它为\textbf{非主属性} (nonprime attribute).
+\end{definition}
+
+\section{基于主键的范式}
+
+{\captionof{table}{基于主键的范式} % 表格标题
+\label{基于主键的范式} % 交叉引用标签
+\begin{longtable}{p{8em}p{17em}p{17em}}
+    \hline
+    % 表头
+    \textbf{范式} & \textbf{内容} & \textbf{校正方法} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+
+    % 表格内容
+    第一范式 1NF 
+    & 关系中不应该包含多值属性或嵌套关系 
+    & 为每个多值属性或嵌套关系组建新关系 \\
+    第二范式 2NF
+    & 对于其主键包含多个属性的关系, 不应该存在非主属性对主属性的部分依赖
+    & 分解原来的关系, 为每个部分键及其相关属性建立一个新关系, 确保在一个关系中
+    保留原始的主键以及完全函数依赖于它的任何属性 \\ 
+    第三范式 3NF
+    & 关系中不应该有一个非键属性对另一个非键属性的函数依赖,
+    即不应该有一个非键属性传递依赖于主键 
+    & 分解原来的关系并建立一个关系, 其中包括的非键属性可以函数确定
+    其他的非键属性.
+\end{longtable}}
+
+\section{Boyce-Codd 范式}
+
 \begin{example}
     现有关系模式: $R(A, B, C, D, E)$, 存在函数依赖 
     $A B C \rightarrow D E, A C \rightarrow D, D \rightarrow E$.
@@ -894,118 +1026,12 @@ WHERE  <Condition>
 
 \input{LateX_tem/appendix.tex}
 
-\chapter{集合论}
-
-\section{公理化集合论}
-
-接下来我们介绍一个公理系统, 该公理系统描述了被称为{\kaishu 集合}的数学对象的性质,
-在介绍这些公理后, 我们将展示这些公理的一些最简单的推论.
-
-\subsection{Zermelo-Fraenkel 公理系统}
-
-\setcounter{axiom}{0}
-\begin{axiom}[外延公理]
-    $A = B \iff \forall x \left( (x \in A) \iff (x \in B) \right)$, 
-    即集合 $A$ 与集合 $B$ 相等, 当且仅当它们所具有的各元素是相同的.
-\end{axiom}
-\begin{axiom}[分离公理]
-    集合 $A$ 和性质 $P$ 总能够确定一个集合 $B$, 
-    其元素是且仅是 $A$ 中具有性质 $P$ 的元素,
-    即 $B = \left\{ x \in A | P(x) \right\}$.
-\end{axiom}
-
-\begin{example}
-    我们可以用分离公理来理解差集运算, 设 $A,B$ 是两个集合, $A \setminus B
-    \xlongequal{\mathrm{def}} \left\{ x \in A | x \notin B \right\}$,
-    显然这里的 $A$ 是一个集合, 而 $x \notin B$ 是一个性质, 它们总是能够确定
-    这样的集合 $A \setminus B$.
-\end{example}
-\begin{example}
-    试证明 {\kaishu $\forall A \left( \varnothing \in A \right)$, 即空集是任何集合的
-    子集}.
-    \begin{proof}
-        分离公理在一些数学结构中是很常用的, 我们需要从一个集合 $A$ 中分离出具有性质
-        $P$ 的元素来. 显然, 在这个问题中, 设 $X$ 是一个集合, 那么我们能够分离出它的
-        空子集 $\varnothing_X = \left\{ x \in X | x \ne x \right\}$ 来.
-        设 $Y$ 是另一个任意给定的集, 有 $\varnothing_Y = \left\{ y \in Y |
-        y \ne y \right\}$, 根据外延公理, $\varnothing_X = \varnothing_Y$.
-        由于我们的 $X,Y$ 都是任意给定的集合, 这就是说, 空集是唯一的, 我们用 $\varnothing$
-        来表示空集, 并且, 任何集合都有空子集.
-    \end{proof}
-\end{example}
-
-\begin{axiom}[并集公理]
-    由集合族 $\mathscr{A}$ 的诸集合 $A_i$ 的元素组成的集合 
-    $\cup \mathscr{A}$ 是存在的. 即集合的并集是一个集合, 且
-    \[ x \in \cup \mathscr{A} \iff \exists A \in \mathscr{A} \left(
-        x \in A
-    \right). \]
-\end{axiom}
-
-\begin{example}
-    根据并集公理和分离公理, 我们可以给出集合族 $\mathscr{A}$ 的交集 $\cap \mathscr{A}$
-    的定义, 并集概念的核心是并集中的元素属于集合族中的每一个集合, 因此 
-    $\cap \mathscr{A} \xlongequal{\mathrm{def}} \left\{ x \in \cup 
-    \mathscr{A} | \forall A \in \mathscr{A} (x \in A) \right\}$.
-\end{example}
-
-\begin{axiom}[配对公理]
-    对于集合 $X$ 和集合 $Y$, 存在一个集合, 其元素是且仅是 $X$ 和 $Y$, 
-    将该集合记作 $\left\{ X,Y \right\}$, 
-    称为集合 $X,Y$ 的{\normalfont\bfseries 无序偶}.
-\end{axiom}
-
-\begin{axiom}[子集之集公理]
-    对于任意给定的集合 $A$, 存在一个集合 $\mathscr{P}(A)$, 使得 $\mathscr{P}(A)$
-    中的元素是且仅是 $A$ 的子集, 即 
-    $\mathscr{P}(A) = \left\{ X | X \subset A \right\}$.
-\end{axiom}
-
-\begin{example}
-    现在我们来回答为什么要按照定义 \ref{def: 二元关系} 的方式来定义二元关系.
-    T.B.C. \label{TBC}
-\end{example}
-
-公理 $1 \sim 5$ 限制了形成新集合的可能性.
-为了表述下面的公理, 我们需要给定后继集和归纳集的概念.
-
-\begin{definition}[后继集]
-    设 $X$ 是一个集合, 集合 $X \cup \left\{ X \right\}$ 称为 $X$ 的\textbf{后继集},
-    即在 $X$ 中补充一个单元素集合 $\left\{ X \right\}$. 集合 $X$ 的后继集记作
-    $X^+$.
-\end{definition}
-\begin{definition}[归纳集]
-    假设 $X$ 是一个集合, 如果 $X$ 包含空集以及自身任何一个元素的后继集, 则称 $X$
-     是一个归纳集.
-\end{definition}
-
-\begin{axiom}[无穷公理]
-    归纳集, 即{\bfseries 包含空集以及自身任何一个元素的后继集}的集合, 是存在的.
-\end{axiom}
-
-\begin{example}
-    根据无穷公理和公理 $1 \sim 4$, 我们可以建立自然数集 $\mathbb{N}_0$ 的 Von 
-    Neumann 方案. 我们把自然数集 $\mathbb{N}_0$ 定义为各归纳集的交集, 即最小归纳集.
-    $\mathbb{N}_0$ 的元素是集合
-    \[ \varnothing, \varnothing^+, \left( \varnothing^+ \right)^+, \]
-    其中, $\varnothing^+ = \varnothing \cup \left\{ \varnothing \right\}
-    = \left\{ \varnothing \right\}$, 而 $\left\{ \varnothing \right\}^+
-    = \left\{ \varnothing \right\} \cup \left\{ 
-        \left\{ \varnothing \right\}
-    \right\}$. 这些集合就是我们用符号 $0,1,2,\cdots$ 表示的并称之为自然数的
-    数学对象的模型.
-\end{example}
-
-\onecolumn
 \begin{thebibliography}{1}
     \addcontentsline{toc}{chapter}{参考文献}
     \bibitem{数据库系统基础}
     [美] Rames Elmasri, [美] Shamkant B. Navathe. 数据库系统基础: 第 7 版
     (Fundamentals of Database Systems, 7e)[M].
     陈宗斌等译. 北京: 清华大学出版社, 2020.
-    \bibitem{zorich}
-    [俄罗斯] B.A.Zorich. 数学分析: 第 7 版. 第一卷[M].
-    北京: 高等教育出版社, 2019
 \end{thebibliography}
 
 \input{LateX_tem/endpage.tex}
