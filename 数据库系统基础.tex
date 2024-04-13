@@ -455,8 +455,50 @@ Applications/Query
 当某一层的模式改变时, 数据独立性保证了更高层上的模式可以保持不变, 只需要更改两个层次之间的映射即可.
 这为数据库的设计、使用和维护带来了极大的便利.
 
-\chapter{实体—关系模型}
+\chapter{实体—联系模型}
 \label{chap: ER model}
+
+\begin{example}
+    CBA 赛事包括球队 (team)、球员 (player) 和比赛 (game) 的信息. 
+    每个球队有唯一的编号 (tNo)、名称 (tName) 和所属城市 (tCity).
+    每个球队有多名球员, 每名球员有唯一的编号 (pNo)、姓名 (pName)、位置
+    (pPosition)、体重 (pWeight) 和年龄 (pAge).
+    每场比赛有唯一的编号 (gNo)、日期 (gDate)、地点 (gLocation) 和主客场球队.
+    每场比赛有多个球员参与, 每个球员在比赛中有特定的表现数据, 例如得分 (pgPoints)、
+    助攻 (pgAssists) 和篮板 (pgRebounds).
+    根据以上信息构造的满足数据需求的实体—联系 (ER) 模型 
+    如图 \ref{example-er:team-player-game} 所示.
+    \begin{figure}[H]
+        \centering
+        \includegraphics*[width=\textwidth]{pic/CBA赛事.png}
+        \caption{CBA 赛事的 E-R 建模}
+        \label{example-er:team-player-game}
+    \end{figure}
+    上图中需要特别说明的是, 一场比赛的主客场球队是根据主场 (home) 和客场 (away)
+    关系来确定的.
+\end{example}
+
+\begin{example}
+    某医院有多个科室 (department), 科室包含有相关编号 (dNo) 和名称 (dName).
+    每个科室有多名医生 (doctor), 每名医生有各自的工号 (eNo)、姓名 (eName)、
+    出生日期 (eBirthDate)、工龄 (eYearsOfService)、民族 (eEthicity)、
+    籍贯 (ePlaceOfOrigin) 等信息.
+    每名医生只能在一个科室中工作, 但可以参与多个医学项目 (medical project,
+    即 project), 每个项目可由多名医生参加.
+    参加相应医学项目时, 有相关的项目周期 (pDuration)、名称 (pName)、项目经费
+    (pBudget)、项目简介 (pInfo) 等信息.
+    根据以上信息构造的满足数据需求的实体—联系 (ER) 模型 
+    如图 \ref{example-er:doctor-department-project} 所示.
+    \begin{figure}[H]
+        \centering
+        % 图的内容
+        \includegraphics*[width=\textwidth]{pic/ER_医院科室.png}
+        \caption{医院内部的 E-R 建模}
+        \label{example-er:doctor-department-project}
+    \end{figure}
+    为了避免混淆, 我们在定义医生的有关属性时采用了 e 开头 (毕竟医生从某种角度上讲
+    可以看作是医院的雇员, 即 employee).
+\end{example}
 
 \chapter{关系数据模型和关系数据库约束}
 
@@ -729,9 +771,38 @@ $\rho_{\mathcal{S}(B_1, B_2, \cdots, B_n)}(\mathcal{R})$
 
 SQL 是\textbf{结构化查询语言} (Structured Query Language) 的缩写,
 是一种综合性的数据库语言.
-它的前身是结构化查询语言 (Stuructured English QUEry Language, SEQUEL), 
+它的前身是结构化查询语言 (Stuructured English QUEry Language, SEQUEL),
 在美国国家标准学会 (American National Standards Institute, ANSI) 和国际标准化组织
 (International Standards Organization, ISO) 的共同努力下实现了 SQL 的标准化.
+
+关于 SQL 的历史我们不再赘述, 感兴趣的读者可以自行了解. 本章我们以 PostgresSQL 为例
+介绍一些基础的 SQL 语法, 需要注意的是, 各种 SQL 实现实际上都遵循着大体上相似的原则,
+因此如果你的课程并不主要使用 PostgresSQL, 而是使用 Oracle 或者 MySQL 这样的其他的
+DBMS 软件, 你依然可以参考本书来完成一些基本的 SQL 语法的学习, 在需要学习特定的 SQL 实现
+的特性的时候, 再转到更专业更深入的材料中学习.
+
+\section{SQL 中的数据定义和数据类型}
+
+\subsection{SQL 中的 \lstinline|CREATE TABLE| 命令}
+
+\lstinline|CREATE TABLE| 命令用于指定一个新关系, 为此, 你需要指定新关系的名称、
+属性及其类型和一些约束条件 (如果需要的话).
+
+\begin{example} 
+    下述命令创建了一个 “天气” 关系 (方便起见, 我们以后都把关系称作\textbf{表}, 即 table),
+    它有五个属性 (我们以后把属性称为\textbf{列}或者字段, 即 column, 字段是在
+    Microsoft Access 中对关系的属性的称呼), 分别是城市 (city)、最高温度 (high temperature, temp\_hi)、最低温度 (low temperature, temp\_lo)、
+    降水 (precipitation) 和日期 (date).
+\begin{lstlisting}
+CREATE TABLE weather (
+    city varchar(80),
+    temp_lo int,
+    temp_hi int,
+    prcp real,
+    date date
+);
+\end{lstlisting}
+\end{example}
 
 \section{SQL 中的基本检索查询}
 
@@ -803,6 +874,31 @@ WHERE  <Condition>
     \end{tikzpicture}
 \caption{}
 \end{figure}
+
+\chapter{关系模式规范化理论}
+
+\begin{example}
+    现有关系模式: $R(A, B, C, D, E)$, 存在函数依赖 
+    $A B C \rightarrow D E, A C \rightarrow D, D \rightarrow E$.
+    问:
+    \begin{enumerate}[label={$\left.\arabic*\right)$}, itemsep=0pt]
+        \item 关系 $R$ 属于第几范式? 
+        \item 若关系 $R$ 不属于 $B C N F$, 请将其逐步分解为 BCNF.
+    \end{enumerate}
+    要求写出每一级范式的分解过程。
+\end{example}
+
+\begin{example}
+    现有关系模式: $R(A, B, C, D, E, F)$,
+    存在函数依赖 
+    $B \rightarrow C, A \rightarrow D, 
+    A B \rightarrow E, D \rightarrow F$. 问:
+    \begin{enumerate}[label={$\left.\arabic*\right)$}, itemsep=0pt]
+        \item 关系 $R$ 属于第几范式?
+        \item 若关系 $R$ 不属于 $B C N F$, 请将其逐步分解为 BCNF.
+    \end{enumerate}
+    要求写出每一级范式的分解过程。
+\end{example}
 
 \input{LateX_tem/appendix.tex}
 
