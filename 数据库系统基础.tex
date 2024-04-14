@@ -34,6 +34,7 @@
 \input{LaTeX_tem/fancyhdr_settings.tex}
 \input{LaTeX_tem/titlesec_settings.tex}
 \input{LaTeX_tem/geometry_settings.tex}
+% \input{LaTeX_tem/geometry_b5_settings.tex}
 \input{LaTeX_tem/mdframed_settings.tex}
 \input{LaTeX_tem/listings_settings.tex}
 
@@ -81,7 +82,7 @@
 \pagenumbering{roman} % 切换回罗马数字页码
 \addtocontents{toc}{\protect\thispagestyle{empty}}
 \pagestyle{plain}
-{\tableofcontents}
+{\small \tableofcontents}
 \newpage
 \thispagestyle{empty}
 \cleardoublepage % 确保正文从奇数页开始
@@ -514,7 +515,7 @@ Applications/Query
 
 \subsection{选择运算}
 
-分离公理\cite{zorich}告诉我们, 对于集合 $A$, 我们总能根据性质 $P$ 来确定
+分离公理告诉我们, 对于集合 $A$, 我们总能根据性质 $P$ 来确定
 $A$ 的一个子集, 这个子集中的所有元素都是 $A$ 中满足性质 $P$ 的元素. 由此我们
 得到了关系的选择运算. 它从一个关系当中, “筛选” 出符合某个条件的元组来, “过滤”
 掉那些不符合条件的元组.
@@ -798,6 +799,14 @@ CREATE TABLE weather (
 
 \section{SQL 中的基本检索查询}
 
+\begin{lstlisting}
+department(dNo,dName,officeRoom,homepage)
+student(sNo,sName,sex,age,dNo)
+course(cNo,cName,cPNo,credit,dNo)
+sc(sNo,cNo,score,recordDate)
+\end{lstlisting}
+
+
 \subsection{基本 SQL 查询的 \lstinline|SELECT-FROM-WHERE| 结构}
 
 \lstinline|SELECT| 语句的基本形式也称为\textbf{映射} (mapping) 或
@@ -809,65 +818,83 @@ WHERE  <Condition>
 \end{lstlisting}
 其中, \lstinline|<AttributeList>| 是一个属性名称的列表, 查询将通过该列表来检索属性的值.
 
+\begin{example}
+    查询所有年龄大于等于20岁的学生学号、姓名
+\begin{lstlisting}[language=SQL]
+SELECT sNo, sName
+FROM student
+WHERE age >= 20;
+\end{lstlisting}
+\end{example}
+
+
+\begin{example}
+    查询所有姓钱的男生学号、姓名、出生年份.
+    \begin{lstlisting}[language=SQL]
+SELECT sNo, sName, EXTRACT(YEAR FROM CURRENT_DATE) - age AS birthYear
+FROM student
+WHERE sName LIKE '钱%' AND sex = '男';
+    \end{lstlisting}
+\end{example}
+
+\begin{example}
+    查询所有学分大于3的课程名称.
+    \begin{lstlisting}[language=SQL]
+SELECT cName
+FROM course
+WHERE credit > 3;
+    \end{lstlisting}
+\end{example}
+
+
+\begin{example}
+    查询所有没有被分配到任何学院的学生姓名.
+    \begin{lstlisting}[language=SQL]
+SELECT sName
+FROM student
+WHERE dNo IS NULL;
+    \end{lstlisting}
+\end{example}
+\begin{example}
+    查询所有尚未设置主页的学院名称.
+    \begin{lstlisting}[language=SQL]
+SELECT dName
+FROM department
+WHERE homepage IS NULL;
+    \end{lstlisting}
+\end{example}
+
+\begin{example}
+    查询各个学院的平均年龄；
+    \begin{lstlisting}
+SELECT dNo, AVG(age) AS Average_Age
+FROM student
+GROUP BY dNo;
+    \end{lstlisting}
+\end{example}
+
+\begin{example}
+    查询每个学生选修课程的平均分；
+    \begin{lstlisting}[language=SQL]
+SELECT AVG(sc) AS Average_Score
+FROM sc
+GEOUNP BY sNo;
+    \end{lstlisting}
+\end{example}
+\begin{example}
+    查询各课程的平均分；
+\end{example}
+\begin{example}
+    查询各学院开设的课程门数；
+\end{example}
+\begin{example}
+    查询各门课程选修人数。
+\end{example}
+
 \newpage
 \thispagestyle{empty}
 
 \chapter{函数依赖和关系数据库规范化的基础知识}
-
-\chapter{数据库设计的规范化问题}
-
-\begin{figure}[H]
-    \centering
-
-
-    \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-    \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-    %uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-    %Shape: Rectangle [id:dp07523731865033279] 
-    \draw   (87,100) -- (257,100) -- (257,245.5) -- (87,245.5) -- cycle ;
-    %Straight Lines [id:da3910203522703485] 
-    \draw    (87,132) -- (257,132) ;
-
-    %Straight Lines [id:da8499453457607233] 
-    \draw    (257,172.75) -- (416,172.75) ;
-    \draw [shift={(419,172.75)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
-    %Shape: Rectangle [id:dp9006099344965471] 
-    \draw   (419,101.25) -- (589,101.25) -- (589,246.75) -- (419,246.75) -- cycle ;
-    %Straight Lines [id:da5642236534532944] 
-    \draw    (419,133.25) -- (589,133.25) ;
-
-
-    % Text Node
-    \draw (171.5,187.25) node   [align=left] {\begin{minipage}[lt]{104.04pt}\setlength\topsep{0pt}
-    \mbox{-} dNo (PK)\\\mbox{-} dName
-    \end{minipage}};
-    % Text Node
-    \draw (171.5,117.75) node   [align=left] {\begin{minipage}[lt]{106.76pt}\setlength\topsep{0pt}
-    \begin{center}
-    Department
-    \end{center}
-
-    \end{minipage}};
-    % Text Node
-    \draw (503.5,119) node   [align=left] {\begin{minipage}[lt]{106.76pt}\setlength\topsep{0pt}
-    \begin{center}
-    Student
-    \end{center}
-
-    \end{minipage}};
-    % Text Node
-    \draw (503.5,188.5) node   [align=left] {\begin{minipage}[lt]{104.04pt}\setlength\topsep{0pt}
-    \mbox{-} sNo (PK)\\\mbox{-} sName
-    \end{minipage}};
-
-
-    \end{tikzpicture}
-\caption{}
-\end{figure}
-
-\chapter{关系模式规范化理论}
 
 \section{函数依赖}
 
@@ -877,20 +904,28 @@ WHERE  <Condition>
 
 \begin{definition}
     设 $X, Y$ 是 $R$ 的两个子集, 这就是说, $X$ 和 $Y$ 是 $R$ 中的两个子属性组,
-    如果对于关系 $\mathcal{R}$ 中任意的元组 $t_1$ 和 $t_2$, 都满足
-    从 $t_1[X] = t_2[X]$ 能够推出 $t_1[Y] = t_2[Y]$, 即
+    如果对于关系模式 $R$ 中任意时刻的一个可能的关系 $\mathcal{R}$,
+    {\kaishu $\mathcal{R}$ 中任意的元组 $t_1$ 和 $t_2$, 都满足
+    从 $t_1[X] = t_2[X]$ 能够推出 $t_1[Y] = t_2[Y]$}, 即
     \[ \forall t_1, t_2 \in \mathcal{R} \left(
-        t_1[X] = t_2[X] \Longrightarrow t_1[Y] = t_2[Y]
+        t_1[X] = t_2[X] \Rightarrow t_1[Y] = t_2[Y]
     \right), \]
+    即 $\mathcal{R}$ 中不可能存在两个元组使得它们在 $X$ 上的属性值相同
+    而在 $Y$ 上的属性值不同,
     则称属性组 $Y$ \textbf{函数依赖} (functional dependency) 于 $X$,
     记作 $X \to Y$.
 \end{definition}
 
 换言之, 属性组 $X$ 中的一个值能够唯一确定属性组 $Y$ 中的一个值.
 这与我们在数学上接触过的函数的概念是一致的.
+如果 $Y$ 不函数依赖于 $X$, 则记作 $X \nrightarrow Y$.
+函数依赖定义中的 “任意” 说明, 函数依赖不是指关系模式的某个或者某些关系实例
+满足约束条件, 而是指所有关系实例均要满足这一约束条件.
 
 \begin{example}
-    对于存储于学校教务系统的一个学生来说, $\left\{\mathrm{sNo}\right\} \to \left\{
+    对于存储于学校教务系统的一个学生来说, 有一关系
+    student(sNo, sName, sDepartment, sMajor), 
+    在这一关系中, $\left\{\mathrm{sNo}\right\} \to \left\{
         \mathrm{sName}, \mathrm{sDepartment}, \mathrm{sMajor}
     \right\}$, 这就是说, 只要确定一个同学的学号, 就能够\textbf{唯一地确定}
     TA 的姓名、学院和专业, 例如, 如果一个学生 $s$ 满足
@@ -975,7 +1010,7 @@ WHERE  <Condition>
 
 {\captionof{table}{基于主键的范式} % 表格标题
 \label{基于主键的范式} % 交叉引用标签
-\begin{longtable}{p{8em}p{17em}p{17em}}
+\begin{longtable}{p{8em}p{14em}p{14em}}
     \hline
     % 表头
     \textbf{范式} & \textbf{内容} & \textbf{校正方法} \\
@@ -1006,10 +1041,45 @@ WHERE  <Condition>
     $A B C \rightarrow D E, A C \rightarrow D, D \rightarrow E$.
     问:
     \begin{enumerate}[label={$\left.\arabic*\right)$}, itemsep=0pt]
-        \item 关系 $R$ 属于第几范式? 
-        \item 若关系 $R$ 不属于 $B C N F$, 请将其逐步分解为 BCNF.
+        \item 关系 $R$ 属于第几范式?
+        \begin{sol}
+            $R \in \mathrm{1NF}$, 这是因为
+            \[ (ABC)^+ = \left\{ A,B,C,D,E \right\}, \]
+            因此 $ABC$ 是 $R$ 的键, 不妨选取其为主键,
+            则 $A,B,C$ 为主属性, $D, E$ 为非主属性,
+            不难发现由于 $AD \to D$,
+            因此存在 $ABC \xrightarrow{\mathrm{Partial}} D$,
+            即非主属性 $D$ 对键 $ABC$ 的部分依赖.
+        \end{sol}
+        \item 若关系 $R$ 不属于 BCNF, 请将其逐步分解为 BCNF.
+        要求写出每一级范式的分解过程.
+        \begin{itemize}[itemsep=0pt]
+            \item $R_{21} = (\left\{A,C,D,E\right\}, \left\{
+                AC \to D, D \to E
+            \right\})$, $R_{22} = (\left\{ A,B,C \right\},
+            \left\{
+                ABC \to ABC
+            \right\})$.
+            \item 注意到在 $R_{21}$ 中存在非主属性 $E$ 对主属性 $AC$
+            的传递依赖, 即 $AC \xrightarrow{\mathrm{Transitive}} E$,
+            于是 $R_{21} \notin \mathrm{3NF}$.
+
+            $R_{31} = \left(
+                \left\{
+                    A, C, D
+                \right\}, \left\{
+                    AC \to D
+                \right\}
+            \right)$, $R_{32} = \left(
+                \left\{ D,E \right\}, \left\{
+                    D \to E
+                \right\}
+            \right)$, $R_{33} = R_{22}$.
+            \item 注意到此时 $R_{31}$, $R_{32}$, $R_{33}$ 中同时也不存在
+            主属性对主键的部分依赖, 因此它实际上已经满足 Boyce-Codd 范式,
+            即 $R_{31}, R_{32}, R_{33} \in \mathrm{BCNF}$.
+        \end{itemize}
     \end{enumerate}
-    要求写出每一级范式的分解过程。
 \end{example}
 
 \begin{example}
@@ -1019,10 +1089,106 @@ WHERE  <Condition>
     A B \rightarrow E, D \rightarrow F$. 问:
     \begin{enumerate}[label={$\left.\arabic*\right)$}, itemsep=0pt]
         \item 关系 $R$ 属于第几范式?
-        \item 若关系 $R$ 不属于 $B C N F$, 请将其逐步分解为 BCNF.
+        \begin{sol}
+            由于
+            \[ (AB)^+ = \left\{
+                A,B, C, D, E, F
+            \right\}, \]
+            因此 $AB$ 为关系 $R$ 的键 (容易验证
+            $B^+ = \left\{ B,C \right\}$,
+            $A^+ = \left\{ A, D, F \right\}$,
+            它们都不是超键), 选择其作为主键.
+            由于 $B \to C$, 因此存在非主属性 $C$ 对主键 $AB$
+            的部分依赖 $AB \xrightarrow{\mathrm{Partial}} C$.
+            这就是说, $R \in \mathrm{1NF}$.
+        \end{sol}
+        \item 若关系 $R$ 不属于 BCNF, 请将其逐步分解为 BCNF.
+        要求写出每一级范式的分解过程.
+        \begin{itemize}[itemsep=0pt]
+            \item 为了消除非主属性对主键的部分依赖, 我们令
+            \[ R_{21} = \left(
+                \left\{B, C\right\}, \left\{
+                    B \to C
+                \right\}
+            \right), \] \[ R_{22} = \left(
+                \left\{ A, D, F \right\},
+                \left\{ A \to D, D \to F \right\}
+            \right), \] \[ R_{23} = \left(
+                \left\{ A, B, E \right\},
+                \left\{
+                    AB \to E
+                \right\}
+            \right). \] 则它们属于第二范式, 即 $R_{21}, R_{22}, R_{23} \in \mathrm{2NF}$.
+            \item 注意到在 $R_{22}$ 中, 由于 $A \to D, D \to F$,
+            即存在非主属性 $F$ 对键 $A$ 的传递依赖 $A \xrightarrow{\mathrm{Transitive}} F$,
+            因此 $R_{22} \notin \mathrm{3NF}$, 为此, 令
+            \[ R_{31} = R_{21}, \] \[ R_{32} = \left(
+                \left\{ A, D \right\}, \left\{ A \to D \right\}
+            \right), \]  \[ R_{33} = \left(
+                \left\{ D, F \right\}, \left\{ D \to F \right\}
+            \right),\] \[ R_{34} = R_{23}, \] 则它们属于第三范式,
+            即 $R_{31}, \cdots, R_{34} \in \mathrm{3NF}$.
+            \item  $R_{31}, \cdots, R_{34} \in \mathrm{BCNF}$,
+            这是因为在它们中不存在主属性对主键的部分依赖.
+        \end{itemize}
     \end{enumerate}
-    要求写出每一级范式的分解过程。
 \end{example}
+
+\chapter{数据库设计的规范化问题}
+
+\begin{figure}[H]
+    \centering
+
+
+    \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+    \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+    %uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+    %Shape: Rectangle [id:dp07523731865033279] 
+    \draw   (87,100) -- (257,100) -- (257,245.5) -- (87,245.5) -- cycle ;
+    %Straight Lines [id:da3910203522703485] 
+    \draw    (87,132) -- (257,132) ;
+
+    %Straight Lines [id:da8499453457607233] 
+    \draw    (257,172.75) -- (416,172.75) ;
+    \draw [shift={(419,172.75)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+    %Shape: Rectangle [id:dp9006099344965471] 
+    \draw   (419,101.25) -- (589,101.25) -- (589,246.75) -- (419,246.75) -- cycle ;
+    %Straight Lines [id:da5642236534532944] 
+    \draw    (419,133.25) -- (589,133.25) ;
+
+
+    % Text Node
+    \draw (171.5,187.25) node   [align=left] {\begin{minipage}[lt]{104.04pt}\setlength\topsep{0pt}
+    \mbox{-} dNo (PK)\\\mbox{-} dName
+    \end{minipage}};
+    % Text Node
+    \draw (171.5,117.75) node   [align=left] {\begin{minipage}[lt]{106.76pt}\setlength\topsep{0pt}
+    \begin{center}
+    Department
+    \end{center}
+
+    \end{minipage}};
+    % Text Node
+    \draw (503.5,119) node   [align=left] {\begin{minipage}[lt]{106.76pt}\setlength\topsep{0pt}
+    \begin{center}
+    Student
+    \end{center}
+
+    \end{minipage}};
+    % Text Node
+    \draw (503.5,188.5) node   [align=left] {\begin{minipage}[lt]{104.04pt}\setlength\topsep{0pt}
+    \mbox{-} sNo (PK)\\\mbox{-} sName
+    \end{minipage}};
+
+
+    \end{tikzpicture}
+\caption{}
+\end{figure}
+
+
+
 
 \input{LateX_tem/appendix.tex}
 
