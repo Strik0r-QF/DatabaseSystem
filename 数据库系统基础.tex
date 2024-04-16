@@ -943,6 +943,141 @@ sc(sNo, cNo, score, recordDate)
     \end{sol}
 \end{example}
 
+\begin{example}
+    查询所有选修了 “数据库” (Datbase System, BDS) 的学生姓名.
+    \begin{sol}
+        为了得到查询结果, 我们首先获取 course 中数据库课程的元组,
+        \[ \sigma_\mathrm{cName='DBS'} (\mathrm{course}), \]
+        接下来, 将其投影到 cNo 属性上,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName='DBS'} (\mathrm{course})
+        \right), \]
+        接下来, 我们将 sc 表和该结果基于 cNo 做一个自然连接,
+        于是没有选择数据库课程的选课记录将会作为悬浮的元组被剔除,
+        \[ \mathrm{sc} \Join_\mathrm{cNo} \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName='DBS'} (\mathrm{course})
+        \right) \]
+        接下来, 我们将其投影到 sNo 属性上,
+        \[ \pi_\mathrm{sNo} \left(
+            \mathrm{sc} \Join_\mathrm{cNo} \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName='DBS'} (\mathrm{course})
+        \right)
+        \right), \]
+        这就是所有选择了数据库的学生的学号,
+        为了得到他们的姓名, 我们将其基于 sNo 属性与 student 表做一个自然连接,
+        并将其投影到 sName 属性上, 于是
+        \[ \pi_\mathrm{sName} \left(
+            \mathrm{student} \Join_\mathrm{sNo}
+            \pi_\mathrm{sNo} \left(
+                \mathrm{sc} \Join_\mathrm{cNo} \pi_\mathrm{cNo} \left(
+                    \sigma_\mathrm{cName='DBS'} (\mathrm{course})
+                \right)
+            \right)
+        \right), \]
+        即为所求.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询信息学院 (SIS) 选修了科学技术简史 (A brief History of Science
+    \& Technology, HST) 课程的学生姓名.
+    \begin{sol}
+        我们首先获取信息学院的元组, 并将其投影到 dNo 属性上,
+        \[ \pi_\mathrm{dNo} \left(
+            \sigma_{\mathrm{dName}=\mathrm{SIS}}(\mathrm{department})
+        \right), \]
+        然后将其与 student 表基于 dNo 属性进行自然连接,
+        获得所有信息学院的学生信息:
+        \[ \mathrm{student} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_{\mathrm{dName}=\mathrm{SIS}}(\mathrm{department})
+        \right), \]
+        这张表的属性为 (sNo, sName, sex, age, dNo),
+        其中所有记录的 dNo 字段的值全为信息学院的编号.
+        接下来我们获取科学技术简史课程的元组, 在 course 表中进行选择
+        并进行投影:
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'HST'}(\mathrm{course})
+        \right), \]
+        然后将其与 sc 表进行基于 cNo 进行自然连接,
+        \[ \mathrm{sc} \Join_\mathrm{cNo}
+        \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'HST'}(\mathrm{course})
+        \right), \]
+        该表的属性集为 (sNo, cNo, score, recordDate),
+        其中所有记录的 cNo 值为科学技术简史的课程编号.
+        接下来把它投影到 sNo 属性上, 得到所有选修了科学技术简史的学生的
+        学号, 然后基于 sNo 对这两张表进行自然连接,
+        \[ \left(\mathrm{student} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_{\mathrm{dName}=\mathrm{SIS}}(\mathrm{department})
+        \right)\right) \Join_\mathrm{sNo} \left( \pi_\mathrm{sNo} \left(
+            \mathrm{sc} 
+            \Join_\mathrm{cNo}
+            \pi_\mathrm{cNo} \left(
+                \sigma_\mathrm{cName = 'HST'}(\mathrm{course})
+            \right)
+        \right)\right), \]
+        这就得到选择了科学技术简史, 且在信息学院的学生的信息了, 把它投影到
+        sName 属性上, 
+        \[ \pi_\mathrm{sName} \left(
+        \begin{matrix}
+                & \left(\mathrm{student} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+                \sigma_{\mathrm{dName}=\mathrm{SIS}}(\mathrm{department})
+            \right)\right) \\ 
+            & \Join_\mathrm{sNo} \left( \pi_\mathrm{sNo} \left(
+                \mathrm{sc} 
+                \Join_\mathrm{cNo}
+                \pi_\mathrm{cNo} \left(
+                    \sigma_\mathrm{cName = 'HST'}(\mathrm{course})
+                \right)
+            \right)\right)
+        \end{matrix}\right) \]
+        即为所求.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询选修了数据结构 (Data Structures, DS) 课程并且不及格的学生姓名.
+    \begin{sol}
+        我们首先获取数据结构课程的元组, 并将其投影到 cNo 上,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DS'}\left(
+                \mathrm{course}
+            \right)
+        \right), \]
+        然后将其与 sc 表格基于 cNo 属性做自然连接, 就能得到一个数据结构课程
+        的选课关系了, 在此基础上, 我们筛选出成绩为不合格的元组,
+        并将其投影到 sNo 上,
+        \[ \pi_\mathrm{sNo}\left(\sigma_{\mathrm{score < 60}} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DS'}\left(
+                \mathrm{course}
+            \right)
+        \right)
+        \Join_\mathrm{cNo} \mathrm{sc}
+        \right)\right), \]
+        这就是所有的数据成绩不合格的学生的学号,
+        接下来将其与 student 表基于 sNo 做自然连接, 并把结果投影到 sName,
+        \[ \pi_\mathrm{sName} \left(
+            \left(\pi_\mathrm{sNo}\left(\sigma_{\mathrm{score < 60}} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DS'}\left(
+                \mathrm{course}
+            \right)
+        \right)
+        \Join_\mathrm{cNo} \mathrm{sc}
+        \right)\right)\right) \Join_\mathrm{sNo} \mathrm{student}
+        \right), \]
+        这就是我们想要的.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询计算机学院 (school of computer science, CS) 选修了
+    概率论 (probability theory, PT) 课程且成绩大于等于 80 分的学生姓名.
+    \begin{sol}
+        
+    \end{sol}
+\end{example}
 
 \newpage
 \thispagestyle{empty}
