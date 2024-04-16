@@ -758,6 +758,118 @@ $\rho_{\mathcal{S}(B_1, B_2, \cdots, B_n)}(\mathcal{R})$
 \end{definition}
 
 \newpage
+\section{关系代数查询 \quad 作业}
+
+已知关系模式
+\begin{lstlisting}
+department(dNo, dName, officeRoom, homePage)
+student(sNo, sName, sex, age, dNo)
+course(cNo, cName, cPNo, credit, dNo) // cPNo 为先修课程
+sc(sNo, cNo, score, recordDate)
+\end{lstlisting}
+用关系代数完成以下查询.
+
+\subsection{基本查询}
+
+\begin{example}
+    所有年龄小于 $18$ 岁的男生姓名.
+    \begin{figure}[H]
+        \centering
+
+
+        \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+        \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+        %uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+        
+        
+        % Text Node
+        \draw (160,206.4) node [anchor=north west][inner sep=0.75pt]    {$\mathrm{student}$};
+        % Text Node
+        \draw (96,140.4) node [anchor=north west][inner sep=0.75pt]    {$\sigma \mathrm{_{\mathrm{age< 18\ \land \ sex='\text{male} '}}( student)}$};
+        % Text Node
+        \draw (65.5,73.4) node [anchor=north west][inner sep=0.75pt]    {$\boxed{\pi \mathrm{_{sName}}( \sigma \mathrm{_{\mathrm{age< 18\ \land \ sex='\text{male} '}}( student)})}$};
+        % Connection
+        \draw    (189.5,202) -- (189.5,166) ;
+        \draw [shift={(189.5,163)}, rotate = 90] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+        % Connection
+        \draw    (189.5,136) -- (189.5,99) ;
+        \draw [shift={(189.5,96)}, rotate = 90] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (5.36,-2.57) -- (0,0) -- (5.36,2.57) -- cycle    ;
+        
+        \end{tikzpicture}
+        \caption{年龄小于 $18$ 岁的男生的姓名的查询树}
+        \label{example-query_tree: age<18, sex=male}
+    \end{figure}
+    \begin{cmt}
+        我们可以使用如图 \ref{example-query_tree: age<18, sex=male} 
+        所示的查询树来表达关系代数表达式的建立过程, 在该查询中, 我们首先
+        筛选出了所有年龄小于 $18$ 且性别为男性的 student 元组,
+        然后将其投影到姓名属性上.
+    \end{cmt}
+\end{example}
+
+\begin{example}
+    查询所有学分大于 $3$ 的课程名称.
+    \begin{sol}
+        此后对于一些简单的查询, 我们不再给出查询树,
+        为了获得查询结果, 我们首先需要在 course 关系中筛选出学分大于 $3$ 的元组
+        来, 即 $\sigma_{\mathrm{credit > 3}}(\mathrm{course})$,
+        然后我们将其投影到 cName 属性上, 因此关系代数表达式
+        \[ \pi_{\mathrm{cName}}\left(
+            \sigma_{\mathrm{credit > 3}}(\mathrm{course})
+        \right) \] 
+        即为所求.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询没有先修课程的课程名称.
+    \begin{sol}
+        为了获取查询结果, 我们需要考虑 course 中没有先修课程的元组, 即
+        \[ \sigma_{\mathrm{cPNo = NULL}}(\mathrm{course}), \]
+        然后将其投影到 cName 属性上, 因此
+        \[ \pi_{\mathrm{cName}}\left(
+            \sigma_{\mathrm{cPNo = NULL}}(\mathrm{course})
+        \right) \]
+        即为所求. 注意在 SQL 中表达一个值是否为 \lstinline|NULL| 通常采用
+        \lstinline|IS| 和 \lstinline|IS NOT| 关系符, 但为了方便起见,
+        我们关系代数表达式中我们采用相等运算符 $=$.
+    \end{sol}
+\end{example}
+
+\subsection{连接查询}
+
+\begin{example}
+    查询 “信息学院” 所有学生的姓名.
+    \begin{sol}
+    我们首先基于 student 和 department 关系的 dNo 属性将两个表
+    做自然连接:
+    \[ \mathrm{student}
+    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}, \]
+    然后筛选出学院名称为信息学院 (School of Infotmation Science, SIS)
+    的元组,
+    \[ \sigma_{\mathrm{dName = 'SIS'}}\left(
+        \mathrm{student}
+    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}
+    \right), \]
+    接下来将该关系投影到 sName 属性上得到查询结果, 因此
+    \[ \pi_\mathrm{sName} \left(
+        \sigma_{\mathrm{dName = 'SIS'}}\left(
+        \mathrm{student}
+    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}
+    \right)
+    \right) \]
+    即为所求.
+    \end{sol}
+    \begin{cmt}
+        由于在 \LaTeX 公式中输入汉字较为不便, 我们采用英文形式来给出关系代数
+        表达式.
+    \end{cmt}
+\end{example}
+
+
+
+\newpage
 \thispagestyle{empty}
 
 \chapter{SQL 基础}
@@ -1187,6 +1299,7 @@ GEOUNP BY sNo;
 \caption{}
 \end{figure}
 
+\chapter{事务处理}
 
 
 
