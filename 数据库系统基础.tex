@@ -842,31 +842,106 @@ sc(sNo, cNo, score, recordDate)
 \begin{example}
     查询 “信息学院” 所有学生的姓名.
     \begin{sol}
-    我们首先基于 student 和 department 关系的 dNo 属性将两个表
-    做自然连接:
-    \[ \mathrm{student}
-    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}, \]
-    然后筛选出学院名称为信息学院 (School of Infotmation Science, SIS)
-    的元组,
-    \[ \sigma_{\mathrm{dName = 'SIS'}}\left(
-        \mathrm{student}
-    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}
-    \right), \]
-    接下来将该关系投影到 sName 属性上得到查询结果, 因此
-    \[ \pi_\mathrm{sName} \left(
-        \sigma_{\mathrm{dName = 'SIS'}}\left(
-        \mathrm{student}
-    \Join_{\mathrm{student.dNo = department.dNo}} \mathrm{department}
-    \right)
-    \right) \]
-    即为所求.
+        为了得到查询结果, 我们首先获取 department 表中信息学院
+        (School of Information Science, SIS)
+        所在的元组,
+        并将其投影到 dNo 属性上,
+        \[ \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right),\]
+        接下来将其与 student 表基于 dNo 属性进行自然连接, 
+        \[ \mathrm{student} \Join_\mathrm{dNo}
+        \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right), \]
+        所得到的就是
+        信息学院中所有学生的信息. 这是因为不满足 dNo 等于学院的元组将会
+        作为悬浮的元组被剔除,
+        将其投影到 sName 属性上,
+        \[ \pi_\mathrm{sName} \left(
+            \mathrm{student} \Join_\mathrm{dNo}
+        \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right)
+        \right) \]
+        即为所求.
     \end{sol}
     \begin{cmt}
-        由于在 \LaTeX 公式中输入汉字较为不便, 我们采用英文形式来给出关系代数
-        表达式.
+        由于在 \LaTeX 公式中输入汉字较为不便, 我们采用英文来作为名称
+        给定关系代数表达式.
+    \end{cmt}
+    \begin{cmt}
+        连接运算总是消耗时间的, 因此我们尽量减少参与连接运算的元组的个数
+        以获得更高的执行速度, 但是由于本节中我们主要关注给出能够得到查询结果
+        的有效的关系代数表达式, 因此本节中我们给出的关系代数表达式
+        不一定是效率最优的.
     \end{cmt}
 \end{example}
 
+\begin{example}
+    查询所有具有不及格记录的学生姓名.
+    \begin{sol}
+        为了得到查询结果, 我们首先需要将学生的姓名 “附加” 到 sc 表中,
+        而附加这一字段需要参照 sNo 属性, 因此我们首先把 student 表
+        投影到 sNo 和 sName 属性上,
+        \[ \pi_{\mathrm{sName, sNo}}(\mathrm{student}), \]
+        接下来, 利用 sNo 属性, 将 $\pi_{\mathrm{sName, sNo}}(\mathrm{student})$
+        与 sc 表做一个自然连接,
+        \[ \mathrm{sc} \Join_\mathrm{sNo}
+        \pi_{\mathrm{sName, sNo}}(\mathrm{student}), \]
+        所得到的表实际上就是在 sc 表中新增了 sName 字段的结果.
+        接下来, 我们筛选出课程考核不及格的元组,
+        \[ \sigma_{\mathrm{scoer} < 60}\left(
+            \mathrm{sc} \Join_\mathrm{sNo}
+        \pi_{\mathrm{sName, sNo}}(\mathrm{student})
+        \right), \]
+        然后把它投影带 sName 属性上, 由于投影运算将会自然地消除重复的元组,
+        所以
+        \[ \pi_\mathrm{sName} \left(
+            \sigma_{\mathrm{scoer} < 60}\left(
+            \mathrm{sc} \Join_\mathrm{sNo}
+        \pi_{\mathrm{sName, sNo}}(\mathrm{student})
+        \right)
+        \right) \]
+        即为所求.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询 “信息学院” 所有年龄小于 18 岁的女生的姓名.
+    \begin{sol}
+        为了得到查询结果, 我们首先获取 department 表中信息学院
+        (School of Information Science, SIS)
+        所在的元组,
+        并将其投影到 dNo 属性上,
+        \[ \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right),\]
+        接下来我们从 student 表中筛选出年龄小于 18 岁且年龄为女的元组,
+        \[ \sigma_\mathrm{age < 18 \wedge sex='Female'} \left(
+            \mathrm{student}
+        \right), \]
+        这是 student 表中所有的未成年女生组成的子表,
+        我们接下来将其与信息学院的元组进行自然连接,
+        \[ \sigma_\mathrm{age < 18 \wedge sex='Female'} \left(
+            \mathrm{student}
+        \right) \Join_\mathrm{dNo} \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right), \]
+        由于 dNo 不对应于信息学院的 student 元组
+        会被自然连接运算作为悬浮的元组剔除, 因此
+        这就得到了信息学院中所有未成年女生的记录, 接下来将其
+        投影到 sName 属性上, 
+        \[ \pi_\mathrm{sName} \left(
+            \sigma_\mathrm{age < 18 \wedge sex='Female'} \left(
+            \mathrm{student}
+        \right) \Join_\mathrm{dNo} \pi_\mathrm{dNo}\left(
+            \sigma_\mathrm{dName='SIS'} (\mathrm{department})
+        \right)
+        \right) \]
+        即为所求.
+    \end{sol}
+\end{example}
 
 
 \newpage
