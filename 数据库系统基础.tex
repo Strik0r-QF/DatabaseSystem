@@ -1075,7 +1075,97 @@ sc(sNo, cNo, score, recordDate)
     查询计算机学院 (school of computer science, CS) 选修了
     概率论 (probability theory, PT) 课程且成绩大于等于 80 分的学生姓名.
     \begin{sol}
-        
+        我们筛选出计算机学院的 dNo 来, 这个操作可以通过对 department 表
+        进行选择和投影来实现:
+        \[ \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName = 'CS'}(\mathrm{department})
+        \right), \]
+        接下来我们获取概率论课程的课程号,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'PT'} (\mathrm{course})
+        \right), \]
+        然后将其与 sc 表基于 cNo 属性做自然连接,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'PT'} (\mathrm{course})
+        \right) \Join_\mathrm{cNo} \mathrm{sc}, \]
+        接下来, 从中筛选出计算机学院的同学, 这可以通过将其与先前得到的查询结果进行
+        自然连接来实现:
+        \[ \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'PT'} (\mathrm{course})
+        \right) \Join_\mathrm{cNo} \mathrm{sc}
+        \right) \Join_\mathrm{dNo} \left(
+            \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName = 'CS'}(\mathrm{department})
+        \right)
+        \right),\]
+        在这个表中包含了所有选修了概率论课程的选课信息,
+        现在筛选出得分大于等于 80 分的选课记录,
+        \[ A := \sigma_\mathrm{score \geqslant 80} \left(
+            \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'PT'} (\mathrm{course})
+        \right) \Join_\mathrm{cNo} \mathrm{sc}
+        \right) \Join_\mathrm{dNo} \left(
+            \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName = 'CS'}(\mathrm{department})
+        \right)
+        \right)
+        \right), \]
+        其中符号 $:=$ 表示定义,
+        将其投影到 sNo 属性上, 然后与 student 表基于 sNo 做自然连接,
+        \[ A \Join_\mathrm{sNo} \mathrm{student}, \]
+        然后投影到 sName 属性上, 则
+        \[ \pi_\mathrm{sName} \left(
+            A \Join_\mathrm{sNo} \mathrm{student}
+        \right) \]
+        即为所求.
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询文学院 (School of Literature, SOL) 开设的所有学分大于等于 $3$
+    的课程名称.
+    \begin{sol}
+        首先获取文学院的元组,
+        \[ \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName='SOL'} \left(\mathrm{department}\right)
+        \right), \]
+        然后将其与 sc 表基于 dNo 属性自然连接,
+        \[ \mathrm{sc} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName='SOL'} \left(\mathrm{department}\right)
+        \right), \]
+        从中筛选出学分大于等于 3 的元组,
+        并投影到 cNo 分量上,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{score \geqslant 3} \left(
+                \mathrm{sc} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName='SOL'} \left(\mathrm{department}\right)
+        \right)
+            \right)
+        \right), \]
+        与 course 表基于 cNo 属性进行自然连接,
+        \[ \mathrm{course} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{score \geqslant 3} \left(
+                \mathrm{sc} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName='SOL'} \left(\mathrm{department}\right)
+        \right)
+            \right)
+        \right)
+        \right), \]
+        将结果投影到 cName 分量,
+        \[ \pi_\mathrm{cName} \left(
+            \mathrm{course} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{score \geqslant 3} \left(
+                \mathrm{sc} \Join_\mathrm{dNo} \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName='SOL'} \left(\mathrm{department}\right)
+        \right)
+            \right)
+        \right)
+        \right)
+        \right). \]
     \end{sol}
 \end{example}
 
