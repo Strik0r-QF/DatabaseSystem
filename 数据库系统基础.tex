@@ -1169,6 +1169,129 @@ sc(sNo, cNo, score, recordDate)
     \end{sol}
 \end{example}
 
+\begin{example}
+    查询信息学院所有选修了数据库 (DBS) 课程并且不及格的学生姓名及分数.
+    \begin{sol}
+        我们首先获取信息学院的 dNo,
+        \[ I := \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName = 'SIS'} \left(
+                \mathrm{department}
+            \right)
+        \right), \]
+        然后获取数据库课程的 cNo,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS'} \left(
+                \mathrm{course}
+            \right)
+        \right), \]
+        接下来筛选出数据库的选课记录中成绩不及格的元组,
+        并将其投影到 sNo 属性,
+        \[ A := \pi_\mathrm{sNo, score} \left(\sigma_\mathrm{score < 60} \left(\mathrm{sc} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS'} \left(
+                \mathrm{course}
+            \right)
+        \right)
+        \right)\right)\right), \]
+        这就是所有数据库不及格的学生的学号了, 接下来为了减少运算次数,
+        我们首先将 student 表与 $I$
+        进行自然连接, 得到 student 表中所有信息学院的记录:
+        \[ B := \mathrm{student} \Join_\mathrm{dNo} \left(
+            \pi_\mathrm{dNo} \left(
+            \sigma_\mathrm{dName = 'SIS'} \left(
+                \mathrm{department}
+            \right)
+        \right)
+        \right),\]
+        现在将 $A$ 和 $B$ 基于 sNo 进行自然连接,
+        然后把结果投影到 sName 和 score 属性上,
+        \[ \pi_\mathrm{sName, score} \left(
+            A \Join_\mathrm{sNo} B
+        \right). \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询王强 (WangQiang) 同学所选修的全部课程名称、学分以及开课学院.
+    \begin{sol}
+        我们首先获取王强同学在 student 表中所在的元组, 并将其投影到
+        sNo 属性上,
+        \[ \pi_\mathrm{sNo} \left(
+            \sigma_\mathrm{sName = 'WangQiang'} \left(
+                \mathrm{student}
+            \right)
+        \right), \]
+        接下来, 将其与 sc 表进行自然连接, 就能得到王强同学的选课记录,
+        \[ A := \mathrm{sc} \Join_\mathrm{sNo} \left(
+            \pi_\mathrm{sNo} \left(
+            \sigma_\mathrm{sName = 'WangQiang'} \left(
+                \mathrm{student}
+            \right)
+        \right)
+        \right), \]
+        接下来将 department 表投影到 dNo 和 dName 属性上, 并将其与
+        $A$ (王强同学的选课记录) 做自然连接, 所的结果是在 $A$ 的基础上
+        附加一个字段, 该字段的值为对应于该记录中 dNo 的学院名称,
+        \[ B := A \Join_{dNo} \left(
+            \pi_\mathrm{dNo, dName} \left(
+                \mathrm{department}
+            \right)
+        \right), \]
+        在接下来我们在此基础上把课程名称字段也附加进去, 为此, 我们需要把
+        course 表投影到 cNo 和 cName 属性上, 然后将其与 $B$
+        (附加了学院名称的王强同学的选课记录)
+        进行自然连接,
+        \[ B \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo, cName} \left(
+                \mathrm{course}
+            \right)
+        \right), \]
+        将该结果投影到 cName, credit 和 dName 属性上,
+        即可得到最终结果,
+        \[ \pi_\mathrm{cName, credit, dName} \left(
+            B \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo, cName} \left(
+                \mathrm{course}
+            \right)
+        \right)
+        \right). \]
+    \end{sol}
+\end{example}
+
+\subsection{综合查询}
+
+\begin{example}
+    查询选修了数据库或者选修了算法 (algorithms, ALG) 课程的学生姓名.
+    \begin{sol}
+        我们首先获取数据库和算法课程的元组, 并将其投影到 cNo,
+        \[ \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS' \vee cName = 'ALG'} \left(
+                \mathrm{course}
+            \right)
+        \right), \]
+        接下来, 将其自然连接到 sc 表,
+        \[ A := \mathrm{sc} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS' \vee cName = 'ALG'} \left(
+                \mathrm{course}
+            \right)
+        \right)
+        \right), \]
+        这就是所有与数据库和算法课程相关的选课记录, 接下来我们把学生姓名
+        附加到这个结果中, 为此, 我们首先把 student 表投影到 sNo 和 sName 字段,
+        然后将其与该结果做自然连接,
+        \[ A \Join_\mathrm{sNo} \left(
+            \pi_\mathrm{sNo, sName} (\mathrm{student})
+        \right), \]
+        将结果投影到 sName 属性上, 即可得到最终结果,
+        \[ \pi_\mathrm{sName} \left(
+            A \Join_\mathrm{sNo} \left(
+            \pi_\mathrm{sNo, sName} (\mathrm{student})
+        \right)
+        \right). \]
+    \end{sol}
+\end{example}
+
 \newpage
 \thispagestyle{empty}
 
