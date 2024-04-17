@@ -1292,6 +1292,207 @@ sc(sNo, cNo, score, recordDate)
     \end{sol}
 \end{example}
 
+\begin{example}
+    查询选修了数据库并且选修了算法的学生姓名.
+    \begin{sol}
+        我们首先获取与数据库有关的选课记录,
+        \[ A := \mathrm{sc} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS'} \left(
+                \mathrm{course}
+            \right)
+        \right)
+        \right) \]
+        以及与算法有关的选课记录
+        \[ B := \mathrm{sc} \Join_\mathrm{cNo} \left(
+            \pi_\mathrm{cNo} \left(
+            \sigma_\mathrm{cName = 'DBS'} \left(
+                \mathrm{course}
+            \right)
+        \right)
+        \right), \]
+        现在把 $A$ 和 $B$ 都投影到 sNo 属性上, 得到选修了数据库的所有学生的学号,
+        以及选修了算法的所有选生的学号, 然后求交集,
+        \[ \pi_\mathrm{sNo} \left( A \right)
+        \cap \pi_{sNo} \left(B\right), \]
+        这就是同时选修了这两门课程的学生的学号,
+        将其与 student 表做自然连接, 然后把结果投影到 sName 属性即可得到结果,
+        \[ \pi_\mathrm{sName} \left(
+            (\pi_\mathrm{sNo} \left( A \right)
+        \cap \pi_{sNo} \left(B\right))
+        \Join_\mathrm{sNo} \mathrm{student}
+        \right). \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询选修了数据库但没有选修算法课程的学生姓名.
+    \begin{sol}
+        我们沿用前一例中得到的表 $A$ (即所有与数据库有关的选课记录)
+        和表 $B$ (即所有与算法有关的选课记录),
+        将他们投影到 sNo 属性上然后求差集,
+        选修了数据库但没有选修算法课程的学生的学号是
+        \[ \pi_\mathrm{sNo}(A) - \pi_\mathrm{sNo}(B), \]
+        将其与 student 表做自然连接, 然后把结果投影到 sName 属性即可得到结果,
+        \[ \pi_\mathrm{sName} \left(
+            \mathrm{student} \Join_\mathrm{sNo} \left(
+                \pi_\mathrm{sNo}(A) - \pi_\mathrm{sNo}(B)
+            \right)
+        \right). \]
+    \end{sol}
+\end{example}
+
+{\small \begin{example}
+    查询没有选修算法课程的学生姓名.
+    \begin{sol}
+        一些查询用关系演算比关系代数更容易指定, 反之亦然. 本例中我们采用
+        元组关系演算来指定查询. 对于一个没有选修算法课程的学生来说,
+        在 sc 关系中应该{\kaishu 不存在这样的元组 $t$, 使得 $t$ 的学号
+        是该学生的学号, 但课程号是算法的课程号.} 因此我们可以制定关系演算
+        \[ \left\{
+            s.\mathrm{sName} |
+            \mathrm{student}(s) \wedge 
+            \lnot \left(\exists sc \left(
+                \mathrm{sc}(sc)
+                \wedge sc.\mathrm{sNo} = s.\mathrm{sNo}
+                \wedge \exists c \left(
+                    \mathrm{course}(c) 
+                    \wedge sc.\mathrm{cNo} = c.\mathrm{cNo}
+                    \wedge c.\mathrm{cName} = \mathrm{ALG}
+                \right)
+            \right)\right)
+        \right\} \]
+        
+        \begin{cmt}
+            此后为了表述方便, 我们常常利用限定论述域的量化命题规则,
+            把 $\forall t \left( \mathcal{R}(t) \right)$
+            (这表示 {\kaishu 对于关系 $\mathcal{R}$ 中所有的元组})
+            和 $\exists t \left( \mathcal{R}(t) \right)$
+            (这表示 {\kaishu 存在关系 $\mathcal{R}$ 的元组 $t$})
+            写为 $\forall t \in \mathcal{R}$ 和 $\forall t \in \mathcal{R}$.
+            因此本例中的关系演算可以被表示为
+            \[ \left\{s.\mathrm{sName} |
+            s \in \mathrm{student}
+            \wedge \lnot \left(
+                \exists \mathrm{sc} \in \mathrm{sc} \left(
+                    sc.\mathrm{sNo} = s.\mathrm{sNo}
+                    \wedge \exists c \in \mathrm{course} \left(
+                        sc.\mathrm{cNo} = c.\mathrm{cNo}
+                        \wedge c.\mathrm{cName} = \mathrm{ALG}
+                    \right)
+                \right)
+            \right)\right\}. \]
+            这可以在一定程度上减少括号的嵌套使用, 来提高查询的可读性.
+        \end{cmt}
+    \end{sol}
+\end{example}}
+
+\begin{example}
+    查询仅仅选修了算法一门课程的学生姓名.
+    \begin{sol}
+        一个学生仅选修了算法一门课程, 意味着 {\kaishu 不存在这样的选课记录 
+        使得它所对应的课程不是算法, 而仍被该生选择},
+        即
+        \[ \left\{s.\mathrm{sName}
+        | s \in \mathrm{student}
+        \wedge \lnot \exists sc \in \mathrm{sc} \left(
+            sc.\mathrm{sNo} = s.\mathrm{sNo}
+            \wedge \exists c \in \mathrm{c} \left(
+                c.\mathrm{cNo} = sc.\mathrm{cNo}
+                \wedge c.\mathrm{cNo} \ne \mathrm{ALG}
+            \right)
+        \right)\right\}. \]
+    \end{sol}
+\end{example}
+
+\newpage
+\begin{example}
+    查询仅仅没有选修算法一门课程的所有学生姓名.
+    \begin{sol}
+        如果一个学生仅仅没有选修算法, 那么这就意味着在 course 中, 除了算法以外的
+        所有课程都存在一条对应的选课记录. 这就是说,
+        \[ \left\{s.\mathrm{sName} | 
+        s \in \mathrm{student 
+        \wedge \forall c \in \mathrm{course}-\left\{\mathrm{ALG}\right\}\left(
+            \exists sc\in\mathrm{sc} \left(
+                sc.\mathrm{sNo} = s.\mathrm{sNo}
+                \wedge 
+                sc.\mathrm{cNo} = c.\mathrm{cNo}
+            \right)
+        \right)}\right\}. \]
+        我们用 $\mathrm{course} - \left\{ALG\right\}$ 来表示从 course 表
+        中排除了算法课程后得到的查询结果, 它可以被表示为
+        \[ \mathrm{coursr}-\left\{\mathrm{ALG}\right\}
+        := \left\{ c \in \mathrm{course} | c.\mathrm{cName} = \mathrm{ALG} \right\}. \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询选修了信息学院开设的所有课程的学生姓名.
+    \begin{sol}
+        如果一个学生选修了信息学院所开设的所有课程,
+        那么对于每一条 \[ A:= \left\{c \in \mathrm{course}
+        | \exists d \in \mathrm{department} \left(
+            c.\mathrm{dNo} = d.\mathrm{dNo}
+            \wedge d.\mathrm{dName} = \mathrm{SIS}
+        \right)\right\} \]
+        中的记录, 即信息学院开设的任意一门课程,
+        在 sc 表中都存在选课记录与之匹配, 这就是说,
+        \[ \left\{s.\mathrm{sName} | 
+            s \in \mathrm{student} 
+            \wedge \forall c \in A \exists sc \in \mathrm{sc} \left(
+                sc.\mathrm{sNo} = s.\mathrm{sNo}
+                \wedge sc.\mathrm{cNo} = c.\mathrm{cNo}
+            \right)
+        \right\}. \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询选修了所有学分大于 $3$ 课程的学生姓名.
+    \begin{sol}
+        一个学生选修了所有的学分大于 $3$ 的课程, 就是说对于任意一条
+        \[ A := \left\{ c \in \mathrm{course} | 
+        c.\mathrm{credit} > 3 \right\} \]
+        中的记录, 即对于任意一门学分大于 $3$ 的课程,
+        在 sc 表中都存在与之匹配的选课记录, 这就是说,
+        \[ \left\{ s.\mathrm{sName} | 
+        s \in \mathrm{student}
+        \wedge \forall c \in A \exists sc \in \mathrm{sc} \left(
+            sc.\mathrm{cNo} = c.\mathrm{cNo}
+            \wedge sc.\mathrm{sNo} = s.\mathrm{sNo}
+        \right)\right\}. \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询数据库课程所有不及格的学生姓名及所在学院.
+    \begin{sol}
+        本题并不存在量化命题, 适合使用关系代数来求解, 
+        我们首先筛选出数据库课程的选课记录,
+        \[ A := \mathrm{sc} \Join_\mathrm{cNo} 
+        \pi_\mathrm{cNo}(\sigma_\mathrm{cName = DBS}(\mathrm{course})), \]
+        从中选择出成绩不及格的元组,
+        \[ \sigma_\mathrm{score < 60} \left(A\right), \]
+        然后将 student 表和 department 表分别投影到 sNo, sName 属性和
+        dNo, dName 属性并按照 dNo 属性完成连接, 得到一张记录了所有学生的
+        学号、姓名和学院号和学院名称的表 $B$:
+        \[ B := \pi_\mathrm{sNo, sName}(\mathrm{student})
+        \Join_\mathrm{dNo} \pi_\mathrm{dNo, dName} \left(
+            \mathrm{department}
+        \right), \]
+        然后按照 sNo 属性将它们自然连接, 并把结果投影到 sName 和 dName 属性上,
+        \[ \pi_\mathrm{sName, dName} \left(
+            \left(\sigma_\mathrm{score < 60} \left(A\right)\right)
+        \Join_\mathrm{sNo} B
+        \right). \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询数据库先修课的课程名称.
+\end{example}
+
 \newpage
 \thispagestyle{empty}
 
