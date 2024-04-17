@@ -1489,8 +1489,49 @@ sc(sNo, cNo, score, recordDate)
     \end{sol}
 \end{example}
 
+\newpage
 \begin{example}
     查询数据库先修课的课程名称.
+    \begin{sol}
+        这个问题适合用关系演算来解决.
+        \[ \left\{c.\mathrm{cName} | 
+        \exists \mathrm{dbs} \in \mathrm{course} \left(
+            \mathrm{dbs}.\mathrm{cName} = \mathrm{DBS}
+            \wedge c.\mathrm{cPNo} = \mathrm{dbs}.\mathrm{cNo}
+        \right)\right\}. \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询先修课为数据库的课程名称.
+    \begin{sol}
+        这个问题适合用关系演算来解决.
+        \[ \left\{
+            c.\mathrm{cName} | 
+            \exists \mathrm{dbs} \in \mathrm{course} \left\{
+                \mathrm{dbs}.\mathrm{cName} = \mathrm{DBS}
+                \wedge c.\mathrm{cPNo} = \mathrm{dbs}.\mathrm{cNo}
+            \right\}
+        \right\}. \]
+    \end{sol}
+\end{example}
+
+\begin{example}
+    查询数据库课程先修课的开设学院主页.
+    \begin{sol}
+        我们先前已经得到了数据库的先修课程为
+        \[ \mathrm{dbsPrior} := 
+        \left\{c.\mathrm{cName} | 
+        \exists \mathrm{dbs} \in \mathrm{course} \left(
+            \mathrm{dbs}.\mathrm{cName} = \mathrm{DBS}
+            \wedge c.\mathrm{cPNo} = \mathrm{dbs}.\mathrm{cNo}
+        \right)\right\}, \]
+        它的先修课的开设学院主页的查询可以用关系演算表达为
+        \[ \left\{ d.\mathrm{homePage} | 
+        \exists c \in \mathrm{dbsPrior} \left(
+            c.\mathrm{dNo} = d.\mathrm{dNo}
+        \right) \right\}. \]
+    \end{sol}
 \end{example}
 
 \newpage
